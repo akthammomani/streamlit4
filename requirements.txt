@@ -1,14 +1,30 @@
 streamlit==1.48.0
-numpy==1.26.4
+plotly==6.2.0
 pandas==2.3.1
-pillow==11.3.0
+Pillow==11.3.0
+numpy==1.26.4
+scipy==1.16.1
+
 pretty_midi==0.2.10
 mido==1.3.3
-plotly==6.2.0
+soundfile==0.13.1
+
+# Transcription backend (NO TensorFlow pulled in)
+basic-pitch[onnx]==0.3.2
+onnxruntime==1.17.3
+
+# Your classifier runtime
 tensorflow==2.19.0
 keras==3.10.0
-onnxruntime==1.17.3
-basic-pitch==0.3.2
+protobuf==4.25.8
+
+# (these are pulled by basic-pitch, pinning helps)
+librosa==0.11.0
+mir_eval==0.8.2
+resampy==0.4.2
+scikit-learn==1.7.1
+
+
 
 
 
