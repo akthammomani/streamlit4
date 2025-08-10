@@ -8,6 +8,8 @@ plotly==6.2.0
 tensorflow==2.19.0
 keras==3.10.0
 onnxruntime==1.17.3
+basic-pitch==0.3.2
+
 
 
 
