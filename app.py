@@ -1,4 +1,4 @@
-# app.py 
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -7,8 +7,6 @@ import tempfile
 from PIL import Image
 import pretty_midi
 import base64
-
-# plotly for the confidence pie
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -382,6 +380,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
