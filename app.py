@@ -12,6 +12,12 @@ import base64
 import plotly.express as px
 import plotly.graph_objects as go
 
+from pathlib import Path
+import sys
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from utils.inference import predict_composer
 from utils.audio_utils import convert_audio_to_midi
 from utils.vis_utils import plot_pianoroll_plotly_clean  # keep existing piano-roll
@@ -383,5 +389,6 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
