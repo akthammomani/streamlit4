@@ -7,14 +7,17 @@ numpy==1.26.4
 pretty_midi==0.2.10
 mido==1.3.3
 soundfile==0.13.1
+librosa==0.11.0
+resampy==0.4.2
 
-basic-pitch==0.3.2
+# Transcription via ONNX (no TensorFlow dependency)
 onnxruntime==1.17.3
 
-# CNN runtime (make Keras drive TF)
+# CNN runtime
+tensorflow==2.19.0
 keras==3.10.0
-tensorflow==2.15.0.post1
 protobuf==4.25.8
 scipy==1.16.1
+
 
 
