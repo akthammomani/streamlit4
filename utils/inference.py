@@ -16,28 +16,28 @@ SEQ_T = 512
 N_KEYS = 88
 
 def _prep_roll(pr: np.ndarray) -> np.ndarray:
-    """Match training preproc: raw 0..127 velocities, (T,88) -> (1,512,88,1)."""
-    pr = np.asarray(pr)
+    """Match training preproc: (T,88) float32 in [0,1] -> (1,512,88,1)."""
+    pr = np.asarray(pr, dtype=np.float32)
 
+    # Accept (88,T) from pretty_midi and flip to (T,88)
     if pr.ndim != 2:
         raise ValueError(f"Expected 2D piano-roll, got {pr.shape}")
-
-    # If coming as (88, T) from pretty_midi, flip
     if pr.shape[0] == N_KEYS and pr.shape[1] != N_KEYS:
         pr = pr.T  # -> (T, 88)
 
-    # Clip to 0..127 and keep float32 (training used uint8 values)
-    pr = np.clip(pr, 0, 127).astype(np.float32)
-
-    # Left-align pad/trim to 512 frames
+    # Clip, pad/trim to 512 frames
+    pr = np.clip(pr, 0, 127)
     T = pr.shape[0]
     if T < SEQ_T:
         pr = np.pad(pr, ((0, SEQ_T - T), (0, 0)), mode="constant")
     elif T > SEQ_T:
         pr = pr[:SEQ_T, :]
 
-    # Add batch & channel dims
+    # **Normalize exactly like your earlier working path**
+    pr = pr / 127.0
+
     return pr.reshape(1, SEQ_T, N_KEYS, 1)
+
 
 def predict_composer(piano_roll: np.ndarray):
     """
@@ -51,3 +51,4 @@ def predict_composer(piano_roll: np.ndarray):
     probs_dict = {COMPOSERS[i]: float(probs[i]) for i in order}
     roll_512x88 = x[0, :, :, 0]                # (512,88) for viz
     return probs_dict, roll_512x88
+
