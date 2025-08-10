@@ -1,36 +1,53 @@
+from pathlib import Path
+import json
 import numpy as np
-import tensorflow as tf 
-model = tf.keras.models.load_model("model/best_cnn.keras", compile=False)
+import tensorflow as tf
 
+# Paths (utils/ is one level under repo root)
+ROOT = Path(__file__).resolve().parents[1]
+MODEL_PATH = ROOT / "model" / "best_cnn.keras"
+LABELS_PATH = Path(__file__).resolve().with_name("label_map.json")
 
-#COMPOSERS = ["Bach", "Beethoven", "Chopin", "Mozart"]
+# Load model + labels
+MODEL = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
+COMPOSERS = json.load(open(LABELS_PATH))  # e.g. ["Bach","Beethoven","Chopin","Mozart"]
 
-LABELS_PATH = Path(__file__).resolve().parent / "label_map.json"
-COMPOSERS = json.load(open(LABELS_PATH))  # ["Bach","Beethoven","Chopin","Mozart"]
+SEQ_T = 512
+N_KEYS = 88
 
 def _prep_roll(pr: np.ndarray) -> np.ndarray:
-    pr = np.asarray(pr, dtype=np.float32)
+    """Match training preproc: raw 0..127 velocities, (T,88) -> (1,512,88,1)."""
+    pr = np.asarray(pr)
 
-    # If it looks like (88, T), flip to (T, 88)
     if pr.ndim != 2:
-        raise ValueError(f"Expected 2D pianoroll, got {pr.shape}")
-    if pr.shape[0] == 88 and pr.shape[1] != 88:
+        raise ValueError(f"Expected 2D piano-roll, got {pr.shape}")
+
+    # If coming as (88, T) from pretty_midi, flip
+    if pr.shape[0] == N_KEYS and pr.shape[1] != N_KEYS:
         pr = pr.T  # -> (T, 88)
 
-    # Pad/trim time dimension to 512
+    # Clip to 0..127 and keep float32 (training used uint8 values)
+    pr = np.clip(pr, 0, 127).astype(np.float32)
+
+    # Left-align pad/trim to 512 frames
     T = pr.shape[0]
-    if T < 512:
-        pr = np.pad(pr, ((0, 512 - T), (0, 0)), mode="constant")
-    elif T > 512:
-        pr = pr[:512, :]
+    if T < SEQ_T:
+        pr = np.pad(pr, ((0, SEQ_T - T), (0, 0)), mode="constant")
+    elif T > SEQ_T:
+        pr = pr[:SEQ_T, :]
 
-    # Normalize and add batch & channel axes -> (1, 512, 88, 1)
-    pr = (pr / 127.0).reshape(1, 512, 88, 1)
-    return pr
+    # Add batch & channel dims
+    return pr.reshape(1, SEQ_T, N_KEYS, 1)
 
-def predict_composer(pianoroll: np.ndarray):
-    x = _prep_roll(pianoroll)
-    probs = model.predict(x, verbose=0)[0]
-    top = np.argsort(probs)[::-1][:3]
-    return {COMPOSERS[i]: float(probs[i]) for i in top}
-
+def predict_composer(piano_roll: np.ndarray):
+    """
+    Returns (probabilities_dict, processed_roll) where:
+      - probabilities_dict maps composer -> probability (sorted desc)
+      - processed_roll is (512, 88) pianoroll for plotting
+    """
+    x = _prep_roll(piano_roll)                 # (1,512,88,1)
+    probs = MODEL.predict(x, verbose=0)[0]     # shape (4,)
+    order = np.argsort(probs)[::-1]
+    probs_dict = {COMPOSERS[i]: float(probs[i]) for i in order}
+    roll_512x88 = x[0, :, :, 0]                # (512,88) for viz
+    return probs_dict, roll_512x88
