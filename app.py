@@ -308,7 +308,7 @@ with main_col:
     # ----- INFERENCE ----- 
     if uploaded_midi:
         with st.spinner("Analyzing composition..."):
-            # Resolve a real path we can read
+            # Real path to the MIDI
             if isinstance(uploaded_midi, str):
                 midi_path = uploaded_midi
             else:
@@ -317,29 +317,42 @@ with main_col:
                     midi_path = tmp_midi.name
     
             try:
-                # Quick sanity check before heavy work
+                midi_data = pretty_midi.PrettyMIDI(midi_path)
+    
+                # Raw roll (88 x T) -> prep the exact (512 x 88) tensor the model expects
+                raw_pr = midi_data.get_piano_roll(fs=10)[21:109, :]  # (88, T)
+    
+                def _prep_for_model(pr_88xT: np.ndarray) -> np.ndarray:
+                    pr = np.asarray(pr_88xT, dtype=np.float32)
+                    if pr.shape[0] == 88 and pr.shape[1] != 88:
+                        pr = pr.T                              # (T, 88)
+                    if pr.shape[0] < 512:
+                        pr = np.pad(pr, ((0, 512 - pr.shape[0]), (0, 0)), mode="constant")
+                    else:
+                        pr = pr[:512, :]
+                    return pr                                   # (512, 88)
+    
+                pr_512x88 = _prep_for_model(raw_pr)
+    
                 if not is_valid_piano_midi(midi_path):
-                    st.warning(
-                        "⚠️ The MIDI appears too short or sparse. "
-                        "Please try a clearer solo piano clip."
-                    )
+                    st.warning("⚠️ The MIDI appears too short or sparse. Please try a clearer solo piano clip.")
                 else:
-                    # Load raw pianoroll (88 × T). Let the model util do flip/pad/trim.
-                    midi_data = pretty_midi.PrettyMIDI(midi_path)
-                    pr_raw = midi_data.get_piano_roll(fs=10)[21:109, :]  # (88, T)
+                    # Call your utils.inference.predict_composer
+                    res = predict_composer(pr_512x88)
+                    if isinstance(res, tuple):
+                        pred_probs, roll_512x88 = res
+                    else:
+                        pred_probs, roll_512x88 = res, pr_512x88
     
-                    # predict_composer must return (probs_dict, pr_proc) where pr_proc = (512, 88)
-                    pred_probs, pr_proc = predict_composer(pr_raw)
-    
-                    # Side-by-side layout (pie on left, piano-roll on right)
+                    # ---- UI: pie + roll ----
                     pie_col, roll_col = st.columns([1, 2], gap="large")
                     with pie_col:
                         st.subheader("Confidence")
                         plot_confidence_pie(pred_probs)
                     with roll_col:
                         st.subheader("Piano-roll Visualization (88 × 512)")
-                        # Your plotter expects (88, 512), so transpose the processed (512, 88)
-                        plot_pianoroll_plotly_clean(pr_proc.T)
+                        # plot expects (88, 512)
+                        plot_pianoroll_plotly_clean(roll_512x88.T)
     
             except Exception as e:
                 st.error(f"Failed to analyze MIDI: {e}")
@@ -385,6 +398,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
