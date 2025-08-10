@@ -308,34 +308,39 @@ with main_col:
     # ----- INFERENCE ----- 
     if uploaded_midi:
         with st.spinner("Analyzing composition..."):
+            # Resolve a real path we can read
             if isinstance(uploaded_midi, str):
                 midi_path = uploaded_midi
             else:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".mid") as tmp_midi:
                     tmp_midi.write(uploaded_midi.read())
                     midi_path = tmp_midi.name
-
+    
             try:
-                midi_data = pretty_midi.PrettyMIDI(midi_path)
-                pr = midi_data.get_piano_roll(fs=10)[21:109, :512]  # (88, time<=512)
-
+                # Quick sanity check before heavy work
                 if not is_valid_piano_midi(midi_path):
                     st.warning(
                         "⚠️ The MIDI appears too short or sparse. "
                         "Please try a clearer solo piano clip."
                     )
                 else:
-                    pred_probs = predict_composer(pr)
-
-                    # ----- side-by-side layout (pie on left, piano-roll on right) ----- 
+                    # Load raw pianoroll (88 × T). Let the model util do flip/pad/trim.
+                    midi_data = pretty_midi.PrettyMIDI(midi_path)
+                    pr_raw = midi_data.get_piano_roll(fs=10)[21:109, :]  # (88, T)
+    
+                    # predict_composer must return (probs_dict, pr_proc) where pr_proc = (512, 88)
+                    pred_probs, pr_proc = predict_composer(pr_raw)
+    
+                    # Side-by-side layout (pie on left, piano-roll on right)
                     pie_col, roll_col = st.columns([1, 2], gap="large")
                     with pie_col:
                         st.subheader("Confidence")
                         plot_confidence_pie(pred_probs)
                     with roll_col:
-                        st.subheader("Piano‑roll Visualization (88 × 512)")
-                        plot_pianoroll_plotly_clean(pr)
-
+                        st.subheader("Piano-roll Visualization (88 × 512)")
+                        # Your plotter expects (88, 512), so transpose the processed (512, 88)
+                        plot_pianoroll_plotly_clean(pr_proc.T)
+    
             except Exception as e:
                 st.error(f"Failed to analyze MIDI: {e}")
             finally:
@@ -380,6 +385,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
