@@ -1,6 +1,10 @@
+import os
+os.environ.setdefault("KERAS_BACKEND", "tensorflow")  # ensure TF backend
+
 import numpy as np
-import tensorflow as tf 
-model = tf.keras.models.load_model("model/best_cnn.keras", compile=False)
+import keras  # Keras 3
+MODEL_PATH = "model/best_cnn.keras"
+MODEL = keras.models.load_model(MODEL_PATH, compile=False
 
 
 COMPOSERS = ["Bach", "Beethoven", "Chopin", "Mozart"]
@@ -26,7 +30,9 @@ def _prep_roll(pr: np.ndarray) -> np.ndarray:
     return pr
 
 def predict_composer(pianoroll: np.ndarray):
-    x = _prep_roll(pianoroll)
-    probs = model.predict(x, verbose=0)[0]
+    x = pianoroll.astype("float32") / 127.0           # (512, 88)
+    x = np.expand_dims(x, axis=(0, -1))               # (1, 512, 88, 1)
+    probs = MODEL.predict(x, verbose=0)[0]
     top = np.argsort(probs)[::-1][:3]
-    return {COMPOSERS[i]: float(probs[i]) for i in top}
+    return {COMPOSERS[i]: float(probs[i]) for i in top}, x[0, :, :, 0]
+
