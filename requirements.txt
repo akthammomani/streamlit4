@@ -1,4 +1,3 @@
-# core UI
 streamlit==1.48.0
 plotly==6.2.0
 pandas==2.3.1
@@ -6,20 +5,16 @@ Pillow==11.3.0
 numpy==1.26.4
 scipy==1.16.1
 
-# MIDI & audio
 pretty_midi==0.2.10
 mido==1.3.3
 soundfile==0.13.1
 
-# Basic Pitch WITHOUT TF (use your fork/branch)
-basic-pitch @ git+https://github.com/akthamomani/basic-pitch@onnx-only
+# ONNX runtime for transcription (no TensorFlow dependency)
 onnxruntime==1.17.3
-librosa==0.11.0
-mir_eval==0.8.2
-resampy==0.4.2
-scikit-learn==1.7.1
 
-# classifier runtime
+# your CNN classifier stack
 tensorflow==2.19.0
 keras==3.10.0
 protobuf==4.25.8
+
+
