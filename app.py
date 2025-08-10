@@ -8,7 +8,7 @@ from PIL import Image
 import pretty_midi
 import base64
 
-# NEW: plotly for the confidence pie
+# plotly for the confidence pie
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -22,7 +22,7 @@ os.environ["BASIC_PITCH_BACKEND"] = "onnx"
 
 from utils.inference import predict_composer
 from utils.audio_utils import convert_audio_to_midi
-from utils.vis_utils import plot_pianoroll_plotly_clean  # keep existing piano-roll
+from utils.vis_utils import plot_pianoroll_plotly_clean  
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
@@ -37,15 +37,15 @@ def is_valid_piano_midi(midi_path, min_notes=10, min_duration=2.0):
     except Exception:
         return False
 
-# ───────────────────────────────────────────────────────
-# 🎨 PAGE CONFIG + CUSTOM STYLES
+
+# ----- PAGE CONFIG + CUSTOM STYLES ----- 
 logo = Image.open("assets/images/logo.png")
 st.set_page_config(
     page_title="AI-Powered Maestro Finder", 
     page_icon=logo,
     layout="wide")
 
-# Custom CSS
+# ----- Custom CSS ----- 
 def local_css(file_name):
     with open(file_name) as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -129,11 +129,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ───────────────────────────────────────────────────────
-
-
-
-# 🍩 NEW: Plotly confidence pie
+# ----- Plotly confidence pie ----- 
 def plot_confidence_pie(pred_probs: dict):
     """
     pred_probs: dict like {"Bach": 0.62, "Mozart": 0.28, "Beethoven": 0.10}
@@ -173,8 +169,7 @@ def plot_confidence_pie(pred_probs: dict):
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# ───────────────────────────────────────────────────────
-# 🧱 WRAPPED LAYOUT TO CENTER THE CONTENT
+# ----- WRAPPED LAYOUT TO CENTER THE CONTENT ----- 
 left_pad, main_col, right_pad = st.columns([1, 6, 1])
 
 with main_col:
@@ -190,9 +185,8 @@ with main_col:
         """,
         unsafe_allow_html=True
     )
-    # ──────────────────────────────────────────────
-    # 🎹 HEADER SECTION  — tightened spacing
-    col1, col2 = st.columns([7, 5], gap="small")  # a little more space for text, tighter gap
+    # ----- HEADER SECTION  — tightened spacing ----- 
+    col1, col2 = st.columns([7, 5], gap="small")  
 
     with col1:
         st.markdown('<div class="subheading">DISCOVER CLASSICAL MASTERS</div>', unsafe_allow_html=True)
@@ -224,8 +218,8 @@ with main_col:
             unsafe_allow_html=True
         )
     st.markdown("""---""")
-    # ──────────────────────────────────────────────
-    # 🛠 TOOL OVERVIEW SECTION
+
+    # ----- TOOL OVERVIEW SECTION ----- 
     st.markdown("""<br>""", unsafe_allow_html=True)
     st.markdown('<div class="subheading">AI Music Analyzer</div>', unsafe_allow_html=True)
     st.markdown('<div class="headline">Identify composers from MIDI or piano recordings</div>', unsafe_allow_html=True)
@@ -265,8 +259,7 @@ with main_col:
             description="Evaluate composer predictions with confidence scores and visual insights for deeper musical analysis."
         ), unsafe_allow_html=True)
 
-    # ──────────────────────────────────────────────
-    # 🎵 FILE UPLOAD / RECORD SECTION (both inputs shown)
+    # ----- FILE UPLOAD / RECORD SECTION ----- 
     st.markdown("""---""")
     st.markdown('<div class="section-wrap">', unsafe_allow_html=True)
     st.header("Upload your MIDI file or record live piano")
@@ -289,7 +282,7 @@ with main_col:
         st.markdown("<h4>Record Audio</h4>", unsafe_allow_html=True)
         recorded_audio = st.audio_input("🎤 Record your audio snippet")
 
-    # Priority: uploaded MIDI > recorded audio
+    # ----- Priority: uploaded MIDI > recorded audio ----- 
     if uploaded_file is not None:
         uploaded_midi = uploaded_file
     elif recorded_audio is not None:
@@ -312,10 +305,9 @@ with main_col:
                 except Exception:
                     pass
 
-    st.markdown('</div>', unsafe_allow_html=True)  # close section-wrap
+    st.markdown('</div>', unsafe_allow_html=True) 
 
-    # ──────────────────────────────────────────────
-    # 🔍 INFERENCE
+    # ----- INFERENCE ----- 
     if uploaded_midi:
         with st.spinner("Analyzing composition..."):
             if isinstance(uploaded_midi, str):
@@ -337,7 +329,7 @@ with main_col:
                 else:
                     pred_probs = predict_composer(pr)
 
-                    # NEW: side-by-side layout (pie on left, piano-roll on right)
+                    # ----- side-by-side layout (pie on left, piano-roll on right) ----- 
                     pie_col, roll_col = st.columns([1, 2], gap="large")
                     with pie_col:
                         st.subheader("Confidence")
@@ -354,8 +346,7 @@ with main_col:
                 except Exception:
                     pass
 
-# ───────────────────────────────────────────────────────
-# 📬 Footer: Contact form + links (scoped, safe to add)
+# ----- Footer: Contact form + links ----- 
 
 with st.container():
     # keep everything visually centered a bit
@@ -377,7 +368,7 @@ with st.container():
             # Use Local CSS File
             local_css("style.css")
 
-        # --- Contacts / badges row ---
+        # ----- Contacts / badges row ----- 
         with mid:
             st.markdown(
                 """
@@ -391,6 +382,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
