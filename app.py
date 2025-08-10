@@ -35,6 +35,31 @@ def is_valid_piano_midi(midi_path, min_notes=10, min_duration=2.0):
     except Exception:
         return False
 
+def extract_best_512(pm: pretty_midi.PrettyMIDI, fs: int = 10, window: int = 512) -> np.ndarray:
+    """
+    Return an (88, 512) piano-roll slice with the highest total energy.
+    Uses all instruments; rows 21..108 (A0..C8).
+    """
+    roll = pm.get_piano_roll(fs=fs)[21:109, :]  # (88, T)
+    T = roll.shape[1]
+    if T == 0:
+        return np.zeros((88, window), dtype=np.float32)
+    if T <= window:
+        out = np.zeros((88, window), dtype=np.float32)
+        out[:, :T] = roll
+        return out
+
+    # moving sum over time to find densest 512 frames
+    energy = roll.sum(axis=0)                            # (T,)
+    w = np.ones(window, dtype=float)
+    # valid convolution -> length T - window + 1
+    conv = np.convolve(energy, w, mode="valid")
+    start = int(conv.argmax())
+    end = start + window
+    return roll[:, start:end].astype(np.float32)
+
+
+
 
 # ----- PAGE CONFIG + CUSTOM STYLES ----- 
 logo = Image.open("assets/images/logo.png")
@@ -398,6 +423,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
