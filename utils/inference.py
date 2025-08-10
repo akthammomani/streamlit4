@@ -3,7 +3,10 @@ import tensorflow as tf
 model = tf.keras.models.load_model("model/best_cnn.keras", compile=False)
 
 
-COMPOSERS = ["Bach", "Beethoven", "Chopin", "Mozart"]
+#COMPOSERS = ["Bach", "Beethoven", "Chopin", "Mozart"]
+
+LABELS_PATH = Path(__file__).resolve().parent / "label_map.json"
+COMPOSERS = json.load(open(LABELS_PATH))  # ["Bach","Beethoven","Chopin","Mozart"]
 
 def _prep_roll(pr: np.ndarray) -> np.ndarray:
     pr = np.asarray(pr, dtype=np.float32)
@@ -30,3 +33,4 @@ def predict_composer(pianoroll: np.ndarray):
     probs = model.predict(x, verbose=0)[0]
     top = np.argsort(probs)[::-1][:3]
     return {COMPOSERS[i]: float(probs[i]) for i in top}
+
