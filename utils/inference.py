@@ -4,7 +4,7 @@ os.environ.setdefault("KERAS_BACKEND", "tensorflow")  # ensure TF backend
 import numpy as np
 import keras  # Keras 3
 MODEL_PATH = "model/best_cnn.keras"
-MODEL = keras.models.load_model(MODEL_PATH, compile=False
+MODEL = keras.models.load_model(MODEL_PATH, compile=False)
 
 
 COMPOSERS = ["Bach", "Beethoven", "Chopin", "Mozart"]
@@ -35,4 +35,5 @@ def predict_composer(pianoroll: np.ndarray):
     probs = MODEL.predict(x, verbose=0)[0]
     top = np.argsort(probs)[::-1][:3]
     return {COMPOSERS[i]: float(probs[i]) for i in top}, x[0, :, :, 0]
+
 
