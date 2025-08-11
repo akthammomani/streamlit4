@@ -342,7 +342,9 @@ with main_col:
     
             try:
                 pm = pretty_midi.PrettyMIDI(midi_path)
-                pr = extract_best_512(pm, fs=10, window=512)  # (88, 512)
+    
+                # densest 512 frames, (88,512) in 0..127
+                pr = extract_best_512(pm, fs=10, window=512)
     
                 if not is_valid_piano_midi(midi_path):
                     st.warning(
@@ -350,15 +352,17 @@ with main_col:
                         "Please try a clearer solo piano clip."
                     )
                 else:
-                    pred_probs, viz_roll = predict_composer(pr)  # viz_roll is (512, 88) or (88, 512) depending on your function
+                    pred_probs, viz_roll = predict_composer(pr)  # viz_roll: (88,512)
+                    st.write("Softmax:", list(pred_probs.items()))
+    
                     pie_col, roll_col = st.columns([1, 2], gap="large")
                     with pie_col:
                         st.subheader("Confidence")
                         plot_confidence_pie(pred_probs)
+                        # DEBUG (optional): st.write(pred_probs)
                     with roll_col:
                         st.subheader("Piano-roll Visualization (88 × 512)")
-                        # our plotter accepts (88,T) or (T,88)
-                        plot_pianoroll_plotly_clean(pr)
+                        plot_pianoroll_plotly_clean(viz_roll)
     
             except Exception as e:
                 st.error(f"Failed to analyze MIDI: {e}")
@@ -404,6 +408,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
