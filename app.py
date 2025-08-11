@@ -213,7 +213,7 @@ with main_col:
         unsafe_allow_html=True
     )
     # ----- HEADER SECTION  — tightened spacing ----- 
-    col1, col2 = st.columns([7, 4], gap="small")  
+    col1, col2 = st.columns([7, 2], gap="small")  
 
     with col1:
         st.markdown('<div class="subheading">Shazam—but for classical composers</div>', unsafe_allow_html=True)
@@ -440,6 +440,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
