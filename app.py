@@ -279,7 +279,7 @@ with main_col:
         st.markdown(card_style.format(
             img_data=get_base64_image("assets/images/image_3.jpg"),
             img_width="450", img_height="300",
-            title="Real-time piano audio composer detection",
+            title="Real-time piano composer detection",
             description="Discover the composer behind live piano recordings quickly and accurately."
         ), unsafe_allow_html=True)
     with tool_col3:
@@ -440,6 +440,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
