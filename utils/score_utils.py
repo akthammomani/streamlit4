@@ -17,7 +17,7 @@ def midi_to_musicxml_str(midi_path: str) -> str:
     return xml
 
 def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
-    
+    import streamlit as st, base64, uuid
     uid  = "osmd_" + uuid.uuid4().hex
     mode = "compact" if compact else "default"
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
