@@ -16,22 +16,35 @@ def midi_to_musicxml_str(midi_path: str) -> str:
         pass
     return xml
 
-# utils/score_utils.py
-# utils/score_utils.py
 def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     import streamlit as st, base64, uuid
     uid  = "osmd_" + uuid.uuid4().hex
     mode = "compact" if compact else "default"
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
 
-    # This HTML and JavaScript has been updated to be simpler and more reliable.
+    # This version includes a CSS reset and a forced delay to fix the sizing.
     html = f"""
-<div id="{uid}-wrap" style="width: 100%; height: 100%;">
-  <div style="display:flex; gap:8px; align-items:center; margin:4px 0 8px;">
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    html, body {{
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden; /* Hide any accidental scrollbars */
+    }}
+  </style>
+</head>
+<body>
+
+<div id="{uid}-wrap" style="width: 100%; height: 100%; display: flex; flex-direction: column;">
+  <div style="padding: 4px 0 8px 0;">
     <button id="{uid}-save-svg">Save SVG</button>
     <button id="{uid}-save-png">Save PNG</button>
   </div>
-  <div id="{uid}" style="width: 100%; height: 100%;"></div>
+  <div id="{uid}" style="width: 100%; flex-grow: 1;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
@@ -39,37 +52,47 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
   const el  = document.getElementById("{uid}");
   const xml = atob("{b64}");
 
-  // 1. Enable autoResize, which is more reliable than manual resizing.
   const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {{
-    autoResize: true,
+    autoResize: false, // We are back to manual resize for more control
     backend: "svg"
   }});
   osmd.setOptions({{
     drawingParameters: "{mode}",
     drawPartNames: false,
-    drawTitle: false,
-    pageFormat: "Endless" // Endless format is required for auto-resizing to work well
+w    drawTitle: false,
+    pageFormat: "Endless"
   }});
 
-  // 2. The rendering logic is now much simpler.
-  //    We just load and render, and the library handles the rest.
-  function render() {{
-      osmd.load(xml).then(() => {{
-          osmd.render();
-      }});
+  function tryRender() {{
+    osmd.load(xml).then(() => {{
+      osmd.render(); // Render once to get the natural score width
+      const svg = el.querySelector("svg");
+      if (!svg) return;
+
+      const scoreWidth = svg.getBBox().width;
+      const containerWidth = el.clientWidth;
+      
+      if (scoreWidth > 0 && containerWidth > 0) {{
+        const zoom = containerWidth / scoreWidth;
+        osmd.zoom = zoom;
+        osmd.render(); // Re-render with the correct zoom to fit the container
+      }}
+    }});
   }}
 
-  // We still use an IntersectionObserver to only render when the element is visible.
-  const io = new IntersectionObserver((entries, obs) => {{
-    if (entries.some(e => e.isIntersecting)) {{
-      obs.disconnect();
-      render();
+  // We use an IntersectionObserver to know when the element is visible
+  const observer = new IntersectionObserver((entries, obs) => {{
+    if (entries[0].isIntersecting) {{
+      // 2. THIS IS THE KEY FIX: Wait 100ms before rendering.
+      // This gives Streamlit's layout time to stabilize.
+      setTimeout(tryRender, 100);
+      obs.disconnect(); // Stop observing after we've triggered the render
     }}
   }}, {{ threshold: 0.1 }});
-  io.observe(el);
 
+  observer.observe(el);
 
-  // --- Save SVG/PNG logic (unchanged from your original) ---
+  // --- Save SVG/PNG logic (unchanged) ---
   function dl(name, blob) {{
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -78,27 +101,20 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     a.click();
     setTimeout(() => {{ URL.revokeObjectURL(a.href); a.remove(); }}, 1000);
   }}
-
   function saveSVG() {{
-    const svg = el.querySelector("svg");
-    if (!svg) return;
+    const svg = el.querySelector("svg"); if (!svg) return;
     const s = new XMLSerializer().serializeToString(svg);
     dl("score.svg", new Blob([s], {{type: "image/svg+xml;charset=utf-8"}}));
   }}
-
   function savePNG() {{
-    const svg = el.querySelector("svg");
-    if (!svg) return;
+    const svg = el.querySelector("svg"); if (!svg) return;
     const s = new XMLSerializer().serializeToString(svg);
-    const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-    const w  = vb && vb.width  ? vb.width  : svg.getBBox().width;
-    const h  = vb && vb.height ? vb.height : svg.getBBox().height;
+    const vb = svg.viewBox.baseVal;
     const img = new Image();
     img.onload = () => {{
-      const scale = 2;
-      const c = document.createElement("canvas");
-      c.width  = Math.max(1, Math.round(w * scale));
-      c.height = Math.max(1, Math.round(h * scale));
+      const scale = 2; const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(vb.width * scale));
+      c.height = Math.max(1, Math.round(vb.height * scale));
       const ctx = c.getContext("2d");
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
       ctx.drawImage(img, 0, 0);
@@ -106,10 +122,12 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     }};
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
   }}
-
   document.getElementById("{uid}-save-svg").addEventListener("click", saveSVG);
   document.getElementById("{uid}-save-png").addEventListener("click", savePNG);
 </script>
+
+</body>
+</html>
 """
-    # 3. Set scrolling=False. Since the content now fits, we don't need scrollbars.
+    # Set scrolling=False. The content should now fit perfectly.
     st.components.v1.html(html, height=height, scrolling=False)
