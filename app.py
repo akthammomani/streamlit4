@@ -193,7 +193,7 @@ with main_col:
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1rem;">
             <img src="data:image/png;base64,{get_base64_image('assets/images/logo.png')}" 
                  alt="Logo" style="width: 60px; height: 60px; border-radius: 8px;">
-            <h1 style="font-size: 60px; font-weight: 800; margin: 0;">
+            <h1 style="font-size: 50px; font-weight: 800; margin: 0;">
                 AI-Powered Maestro Finder
             </h1>
         </div>
@@ -424,6 +424,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
