@@ -96,11 +96,11 @@ st.markdown("""
       font-weight: bold; letter-spacing: 1px; margin-bottom: 8px;
   }
   .headline {
-      font-size: 35px; font-weight: 800; line-height: 1.2;
+      font-size: 30px; font-weight: 800; line-height: 1.2;
       margin-bottom: 0.5rem; color: #1c1c1c;
   }
   .description {
-      font-size: 25px; line-height: 1.6; color: #555;
+      font-size: 20px; line-height: 1.6; color: #555;
       max-width: 900px; margin-top: 10px;
   }
   a { text-decoration: underline; font-size: 16px; }
@@ -424,6 +424,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
