@@ -247,15 +247,14 @@ with main_col:
     tool_col1, tool_col2, tool_col3 = st.columns(3)
 
     card_style = """
-        <div style="background-color:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.07);
-                    padding:20px;text-align:left;height:100%;">
-            <div style="text-align:center;">
-                <img src="data:image/jpeg;base64,{img_data}" width="{img_width}" height="{img_height}" style="border-radius:5px;" />
-            </div>
-            <h4 style="font-size:22px;margin-top:16px;">{title}</h4>
-            <p style="font-size:18px;color:#444;margin-bottom:0;">{description}</p>
-        </div>
-    """
+                  <div class="card">
+                    <div style="text-align:center;">
+                      <img src="data:image/jpeg;base64,{img_data}" width="{img_width}" height="{img_height}" />
+                    </div>
+                    <h4 class="card-title">{title}</h4>
+                    <p class="card-desc">{description}</p>
+                  </div>
+                """
 
     with tool_col1:
         st.markdown(card_style.format(
@@ -429,6 +428,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
