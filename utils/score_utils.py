@@ -25,21 +25,18 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
 
     html = Template(r"""
-<div id="${uid}-wrap" style="width:300%;">
-  <div id="${uid}-status" style="font:12px monospace;color:#666;margin:4px 0 8px;">loading…</div>
+<div id="${uid}-wrap" style="width:100%;">
   <div style="display:flex; gap:8px; align-items:center; margin:0 0 8px;">
     <button id="${uid}-save-svg">Save SVG</button>
     <button id="${uid}-save-png">Save PNG</button>
   </div>
-  <div id="${uid}" style="width:300%;"></div>
+  <div id="${uid}" style="width:100%;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
 <script>
-  const el   = document.getElementById("${uid}");
-  const stat = document.getElementById("${uid}-status");
-  const say  = (t,c)=>{ stat.textContent=t; if(c) stat.style.color=c; };
-  const xml  = atob("${b64}");
+  const el  = document.getElementById("${uid}");
+  const xml = atob("${b64}");
 
   const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {
     autoResize: false,
@@ -48,58 +45,67 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
   osmd.setOptions({
     drawingParameters: "${mode}",
     drawPartNames: false,
-    drawTitle: false,          // <- no stray 'w' here
+    drawTitle: false,
     pageFormat: "Endless"
   });
 
-  function fitOnce() {
+  // Render only after the element is visible and has a stable width
+  let rendered = false;
+  function waitForWidthAndRender() {
+    if (rendered) return;
     const w = el.clientWidth;
-    if (!w || w < 200) { requestAnimationFrame(fitOnce); return; }
+    if (!w || w < 240) { requestAnimationFrame(waitForWidthAndRender); return; }
 
     osmd.load(xml).then(() => {
-      osmd.render(); // initial render to measure
-
-      const svg = el.querySelector("svg");
-      if (!svg) { say("No SVG after render", "#b00"); return; }
-
-      const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-      const scoreW = vb && vb.width ? vb.width : svg.getBBox().width;
-
-      const pad = 8;
-      const colW = Math.max(0, el.clientWidth - pad);
-      if (scoreW > 0 && colW > 0) {
-        osmd.zoom = Math.max(0.05, Math.min(colW / scoreW, 3));
-        osmd.render(); // one more render after zoom
-      }
-
-      // let CSS handle width; no loops
-      const finalSVG = el.querySelector("svg");
-      if (finalSVG) {
-        finalSVG.removeAttribute("width");
-        finalSVG.removeAttribute("height");
-        finalSVG.style.width  = "100%";
-        finalSVG.style.height = "auto";
-        finalSVG.style.display = "block";
-      }
-      say("");
-    }).catch(e => say("OSMD load error: " + e, "#b00"));
+      // initial render to get intrinsic width
+      osmd.render();
+      fitToColumn(2);   // 2-step refine
+      rendered = true;
+    });
   }
 
-  // start only when visible (tabs render hidden)
+  function fitToColumn(refines=1) {
+    const svg = el.querySelector("svg");
+    if (!svg) return;
+
+    const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
+    const scoreW = vb && vb.width ? vb.width : svg.getBBox().width;
+
+    // usable content width inside the Streamlit column (leave tiny gutter)
+    const style = getComputedStyle(el);
+    const pad   = (parseFloat(style.paddingLeft)||0) + (parseFloat(style.paddingRight)||0);
+    const colW  = Math.max(0, el.clientWidth - pad - 8);
+
+    if (scoreW > 0 && colW > 0) {
+      const targetZoom = Math.max(0.05, Math.min(colW / scoreW, 5));
+      if (Math.abs(targetZoom - osmd.zoom) > 0.01) {
+        osmd.zoom = targetZoom;
+        osmd.render();
+      }
+    }
+
+    // let CSS handle width from now on
+    const finalSVG = el.querySelector("svg");
+    if (finalSVG) {
+      finalSVG.removeAttribute("width");
+      finalSVG.removeAttribute("height");
+      finalSVG.style.width  = "100%";
+      finalSVG.style.height = "auto";
+      finalSVG.style.display = "block";
+    }
+
+    // one or two small refinements help when fonts load late
+    if (refines > 0) setTimeout(() => fitToColumn(refines - 1), 120);
+  }
+
+  // Start when the tab actually shows this element
   const io = new IntersectionObserver((entries, obs) => {
-    if (entries.some(e => e.isIntersecting)) { obs.disconnect(); fitOnce(); }
+    if (entries.some(e => e.isIntersecting)) { obs.disconnect(); waitForWidthAndRender(); }
   }, { threshold: 0.1 });
   io.observe(el);
 
   // --- Save buttons ---
-  function dl(name, blob) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
-  }
+  function dl(name, blob) { const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000); }
   document.getElementById("${uid}-save-svg").onclick = () => {
     const svg = el.querySelector("svg"); if (!svg) return;
     const s = new XMLSerializer().serializeToString(svg);
