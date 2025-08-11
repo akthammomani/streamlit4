@@ -357,7 +357,7 @@ with main_col:
                     pred_probs, viz_roll = predict_composer(pr)  # viz_roll: (88,512)
                     #st.write("Softmax:", list(pred_probs.items()))
     
-                    pie_col, sheet, roll_col = st.columns([1, 1, 2], gap="large")
+                    pie_col, sheet, roll_col = st.columns([1, 1.2, 2], gap="large")
                     with pie_col:
                         st.subheader("Confidence")
                         plot_confidence_pie(pred_probs)
@@ -418,6 +418,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
