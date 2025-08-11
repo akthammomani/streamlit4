@@ -13,45 +13,52 @@ def midi_to_name(n: int) -> str:
     octave = (n // 12) - 1
     return f"{_NOTE_NAMES[n % 12]}{octave}"
 
-def plot_confidence_bars(pred_probs: dict):
+def plot_confidence_bars(pred_probs: dict, inside_threshold: float = 0.98):
     """
-    Horizontal confidence bars.
-    y-axis = composer names
-    Bar labels show percent. x-axis hidden.
+    Horizontal confidence bars with smart labels:
+    - If prob >= inside_threshold → put the % label INSIDE the bar (right end)
+    - else → put the % label OUTSIDE to the right
     """
     if not pred_probs:
         st.info("No probabilities to chart.")
         return
 
-    # sort by confidence desc
+    # sort by prob desc
     labels, vals = zip(*sorted(pred_probs.items(), key=lambda kv: kv[1], reverse=False))
     vals = np.array(vals, dtype=float)
-
-    # normalize if needed
     s = vals.sum()
     if s > 0:
         vals = vals / s
+
+    texts = [f"{v*100:.1f}%" for v in vals]
+    # per-bar text position
+    pos = ["inside" if v >= inside_threshold else "outside" for v in vals]
 
     fig = go.Figure(go.Bar(
         x=vals,
         y=list(labels),
         orientation="h",
-        text=[f"{v*100:.1f}%" for v in vals],
-        textposition="outside",
+        text=texts,
+        textposition=pos,            # array of positions
+        insidetextanchor="end",      # align inside labels to the right end
         cliponaxis=False,
         marker=dict(line=dict(color="white", width=1))
     ))
-
+    fig.update_traces(
+        insidetextfont=dict(color="white"),
+        outsidetextfont=dict(color="#111"),
+        hovertemplate="<b>%{y}</b><br>%{x:.2%}<extra></extra>",
+    )
     fig.update_layout(
+        xaxis=dict(visible=False, range=[0, 1.02], fixedrange=True),  # tiny headroom
+        yaxis=dict(title=None, tickfont=dict(size=14), automargin=True),
         margin=dict(l=0, r=10, t=10, b=0),
         #height=40 * len(labels) + 40,
         height=380,
         showlegend=False,
-        xaxis=dict(visible=False, range=[0, 1]),
-        yaxis=dict(title=None, tickfont=dict(size=14)),
     )
-
     st.plotly_chart(fig, use_container_width=True)
+
 
 def plot_pianoroll_plotly_clean(pr: np.ndarray):
     """
@@ -119,6 +126,7 @@ def plot_pianoroll_plotly_clean(pr: np.ndarray):
         height=380
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
 
 
 
