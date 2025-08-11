@@ -41,7 +41,7 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
   osmd.setOptions({ drawingParameters:"${mode}", drawPartNames:false, drawTitle:false, pageFormat:"Endless" });
 
   // Fit using the *actual* rendered pixel width (getBoundingClientRect), then freeze.
-  function fitToColumn(refines=2){
+  function fitToColumn(refines=3){
     const svg = el.querySelector("svg");
     if(!svg) return;
 
