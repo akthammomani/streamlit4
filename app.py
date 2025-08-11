@@ -335,6 +335,11 @@ with main_col:
     
                 # densest 512 frames, (88,512) in 0..127
                 pr = extract_best_512(pm, fs=10, window=512)
+                st.write({
+                    "roll_shape": pr.shape,
+                    "nonzero_frac": float(np.count_nonzero(pr) / pr.size),
+                    "max": int(pr.max()),
+                })
     
                 if not is_valid_piano_midi(midi_path):
                     st.warning(
@@ -343,7 +348,7 @@ with main_col:
                     )
                 else:
                     pred_probs, viz_roll = predict_composer(pr)  # viz_roll: (88,512)
-                    st.write("Softmax:", list(pred_probs.items()))
+                    #st.write("Softmax:", list(pred_probs.items()))
     
                     pie_col, roll_col = st.columns([1, 2], gap="large")
                     with pie_col:
@@ -398,6 +403,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
