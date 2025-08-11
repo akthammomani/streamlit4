@@ -17,7 +17,7 @@ def midi_to_musicxml_str(midi_path: str) -> str:
     return xml
 
 # utils/score_utils.py
-def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
+def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = False):
     
     uid  = "osmd_" + uuid.uuid4().hex
     mode = "compact" if compact else "default"
