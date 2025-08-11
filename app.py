@@ -361,7 +361,7 @@ with main_col:
 
                     with pie_col:
                         st.subheader("Confidence")
-                        plot_confidence_pie(pred_probs)
+                        plot_confidence_bars(pred_probs)
                     
                     with viz_col:
                         st.subheader("Visualization")
@@ -423,6 +423,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
