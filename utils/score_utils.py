@@ -47,7 +47,7 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
 
     const style = getComputedStyle(el);
     const pad   = (parseFloat(style.paddingLeft)||0) + (parseFloat(style.paddingRight)||0);
-    const colW  = Math.max(0, el.clientWidth - pad - 8);   // tiny gutter
+    const colW  = Math.max(0, el.clientWidth - pad - 0);   // tiny gutter
 
     // current drawn width in pixels
     const curW  = svg.getBoundingClientRect().width;
