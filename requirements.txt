@@ -12,13 +12,17 @@ soundfile==0.13.1
 # ONNX runtime for transcription (no TensorFlow dependency)
 onnxruntime==1.17.3
 
-# your CNN classifier stack
+# CNN classifier stack
 tensorflow==2.19.0
 keras==3.10.0
 protobuf==4.25.8
 librosa==0.11.0
 mir_eval==0.8.2
 resampy==0.4.2
+
+# Music sheet
+music21==9.7.1
+
 
 
 
