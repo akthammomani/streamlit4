@@ -16,32 +16,24 @@ SEQ_T  = 512
 N_KEYS = 88
 
 def _prep_roll(pr: np.ndarray) -> np.ndarray:
-    """
-    Match training preproc exactly:
-      - input pianoroll values in [0..127]
-      - shape (T,88)  -> pad/trim to 512
-      - final (1,512,88,1)
-    """
     pr = np.asarray(pr)
-
     if pr.ndim != 2:
         raise ValueError(f"Expected 2D piano-roll, got {pr.shape}")
 
-    # Accept (88,T) from pretty_midi and flip to (T,88)
+    # Accept (88,T) and flip to (T,88)
     if pr.shape[0] == N_KEYS and pr.shape[1] != N_KEYS:
-        pr = pr.T  # -> (T, 88)
+        pr = pr.T
 
-    # Clip to 0..127, keep integers like training artifacts
-    pr = np.clip(pr, 0, 127).round().astype(np.uint8)
+    # MATCH TRAINING: binary {0,1}
+    pr = (pr > 0).astype(np.uint8)
 
-    # Left-aligned pad/trim to 512 frames (time axis = 0)
+    # Left-aligned pad/trim to 512 frames
     T = pr.shape[0]
     if T < SEQ_T:
         pr = np.pad(pr, ((0, SEQ_T - T), (0, 0)), mode="constant")
     elif T > SEQ_T:
         pr = pr[:SEQ_T, :]
 
-    # Batch + channel dims
     x = pr.reshape(1, SEQ_T, N_KEYS, 1)    # (1,512,88,1)
     return x
 
@@ -59,3 +51,4 @@ def predict_composer(piano_roll: np.ndarray):
     # return a (88,512) roll for your plotter
     viz_roll = x[0, :, :, 0].T                 # (88,512)
     return probs_dict, viz_roll
+
