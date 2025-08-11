@@ -225,8 +225,7 @@ with main_col:
     with col2:
         st.markdown("""<br>""", unsafe_allow_html=True)
         st.markdown("""<br>""", unsafe_allow_html=True)
-        st.markdown("""<br>""", unsafe_allow_html=True)
-        st.markdown("""<br>""", unsafe_allow_html=True)
+
         header_img_data = get_base64_image("assets/images/image_1.jpg")
         st.markdown(
             f"""
@@ -430,6 +429,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
