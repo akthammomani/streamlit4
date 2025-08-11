@@ -37,72 +37,109 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
 <script>
   const el  = document.getElementById("${uid}");
   const xml = atob("${b64}");
-  const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, { autoResize:false, backend:"svg" });
-  osmd.setOptions({ drawingParameters:"${mode}", drawPartNames:false, drawTitle:false, pageFormat:"Endless" });
 
-  // Fit using the *actual* rendered pixel width (getBoundingClientRect), then freeze.
-  function fitToColumn(refines=1){
+  const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {
+    autoResize: false,
+    backend: "svg"
+  });
+  osmd.setOptions({
+    drawingParameters: "${mode}",
+    drawPartNames: false,
+    drawTitle: false,
+    pageFormat: "Endless"
+  });
+
+  let refined = false;
+
+  function fitAndWiden() {
     const svg = el.querySelector("svg");
-    if(!svg) return;
+    if (!svg) return;
 
-    const style = getComputedStyle(el);
-    const pad   = (parseFloat(style.paddingLeft)||0) + (parseFloat(style.paddingRight)||0);
-    const colW  = Math.max(0, el.clientWidth - pad - 0);   // tiny gutter
+    // container width (minus tiny gutter & padding)
+    const cs   = getComputedStyle(el);
+    const pad  = (parseFloat(cs.paddingLeft)||0) + (parseFloat(cs.paddingRight)||0);
+    const colW = Math.max(0, el.clientWidth - pad - 8);
 
-    // current drawn width in pixels
-    const curW  = svg.getBoundingClientRect().width;
-    if(colW > 0 && curW > 0){
-      const factor = colW / curW;
-      const target = Math.max(0.05, Math.min(osmd.zoom * factor, 5));
-      if(Math.abs(target - osmd.zoom) > 0.01){
-        osmd.zoom = target;
-        osmd.render();              // apply once
+    // current drawn pixel width of the music
+    const curPx = svg.getBoundingClientRect().width;
+
+    if (colW > 0 && curPx > 0) {
+      const factor = Math.max(0.5, Math.min(colW / curPx, 5)); // scale to fill column
+
+      // Prefer widening measures (content width), else fall back to zoom
+      let usedMeasureFactor = false;
+      try {
+        if (osmd.sheet && typeof osmd.sheet.MeasureWidthFactor !== "undefined") {
+          osmd.sheet.MeasureWidthFactor = factor;
+          // reclaim a bit of margin space
+          osmd.rules.PageLeftMargin  = 2.0;
+          osmd.rules.PageRightMargin = 2.0;
+          usedMeasureFactor = true;
+        }
+      } catch (e) {}
+
+      if (!usedMeasureFactor) {
+        osmd.zoom = Math.max(0.05, Math.min(osmd.zoom * factor, 5));
       }
+      osmd.render();
     }
 
-    // hand CSS the width; prevents future layout loops
+    // Let CSS own the final SVG size (prevents future loops)
     const finalSVG = el.querySelector("svg");
-    if(finalSVG){
+    if (finalSVG) {
       finalSVG.removeAttribute("width");
       finalSVG.removeAttribute("height");
       finalSVG.style.width  = "100%";
       finalSVG.style.height = "auto";
-      finalSVG.style.display= "block";
+      finalSVG.style.display = "block";
     }
 
-    // one small refinement helps if fonts finished loading late
-    if(refines > 0) setTimeout(()=>fitToColumn(refines-1), 120);
+    // One small refinement pass helps if fonts finished loading late
+    if (!refined) { refined = true; setTimeout(fitAndWiden, 120); }
   }
 
-  function startWhenVisible(){
+  function startWhenVisible() {
     const w = el.clientWidth;
-    if(!w || w < 240){ requestAnimationFrame(startWhenVisible); return; }
-    osmd.load(xml).then(()=>{ osmd.render(); fitToColumn(1); });
+    if (!w || w < 240) { requestAnimationFrame(startWhenVisible); return; }
+    osmd.load(xml).then(() => { osmd.render(); fitAndWiden(); });
   }
 
-  // Wait until the tab/column is actually visible
-  const io = new IntersectionObserver((es,obs)=>{ if(es.some(e=>e.isIntersecting)){ obs.disconnect(); startWhenVisible(); } }, {threshold:0.1});
+  // Render only after the element is actually visible (tabs are hidden initially)
+  const io = new IntersectionObserver((entries, obs) => {
+    if (entries.some(e => e.isIntersecting)) { obs.disconnect(); startWhenVisible(); }
+  }, { threshold: 0.1 });
   io.observe(el);
 
-  // --- Save buttons ---
-  function dl(name, blob){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},1000); }
-  document.getElementById("${uid}-save-svg").onclick = ()=>{
-    const svg = el.querySelector("svg"); if(!svg) return;
+  // ----- Save buttons -----
+  function dl(name, blob) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  document.getElementById("${uid}-save-svg").onclick = () => {
+    const svg = el.querySelector("svg"); if (!svg) return;
     const s = new XMLSerializer().serializeToString(svg);
-    dl("score.svg", new Blob([s], {type:"image/svg+xml;charset=utf-8"}));
+    dl("score.svg", new Blob([s], {type: "image/svg+xml;charset=utf-8"}));
   };
-  document.getElementById("${uid}-save-png").onclick = ()=>{
-    const svg = el.querySelector("svg"); if(!svg) return;
+  document.getElementById("${uid}-save-png").onclick = () => {
+    const svg = el.querySelector("svg"); if (!svg) return;
     const s = new XMLSerializer().serializeToString(svg);
     const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
     const w  = vb && vb.width  ? vb.width  : svg.getBBox().width;
     const h  = vb && vb.height ? vb.height : svg.getBBox().height;
     const img = new Image();
-    img.onload = ()=>{
-      const scale=2, c=document.createElement("canvas");
-      c.width=Math.max(1,Math.round(w*scale)); c.height=Math.max(1,Math.round(h*scale));
-      const ctx=c.getContext("2d"); ctx.setTransform(scale,0,0,scale,0,0); ctx.drawImage(img,0,0);
-      c.toBlob(b=>dl("score.png", b), "image/png");
+    img.onload = () => {
+      const scale = 2;
+      const c = document.createElement("canvas");
+      c.width  = Math.max(1, Math.round(w * scale));
+      c.height = Math.max(1, Math.round(h * scale));
+      const ctx = c.getContext("2d");
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.drawImage(img, 0, 0);
+      c.toBlob(b => dl("score.png", b), "image/png");
     };
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
   };
