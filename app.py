@@ -357,7 +357,7 @@ with main_col:
                     pred_probs, viz_roll = predict_composer(pr)  # viz_roll: (88,512)
                     #st.write("Softmax:", list(pred_probs.items()))
     
-                    pie_col, roll_col = st.columns([1, 2], gap="large")
+                    pie_col, sheet, roll_col = st.columns([1, 1, 2], gap="large")
                     with pie_col:
                         st.subheader("Confidence")
                         plot_confidence_pie(pred_probs)
@@ -366,7 +366,7 @@ with main_col:
                         st.subheader("Piano-roll Visualization (88 × 512)")
                         plot_pianoroll_plotly_clean(viz_roll)
 
-                    with pie_col:
+                    with sheet:
                         with st.expander("Show sheet music"):
                             try:
                                 xml = midi_to_musicxml_str(midi_path)
@@ -418,6 +418,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
