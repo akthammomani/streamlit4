@@ -22,6 +22,7 @@ from utils.inference import predict_composer
 from utils.audio_utils import convert_audio_to_midi
 from utils.vis_utils import plot_pianoroll_plotly_clean  
 from utils.inference import _prep_roll, MODEL, COMPOSERS
+from utils.score_utils import midi_to_musicxml_str, render_musicxml_osmd
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
@@ -364,6 +365,14 @@ with main_col:
                     with roll_col:
                         st.subheader("Piano-roll Visualization (88 × 512)")
                         plot_pianoroll_plotly_clean(viz_roll)
+
+                    with roll_col:
+                        with st.expander("Score (beta): show sheet music"):
+                            try:
+                                xml = midi_to_musicxml_str(midi_path)
+                                render_musicxml_osmd(xml, height=800, compact=True)
+                            except Exception as e:
+                                st.warning(f"Couldn’t render sheet music: {e}")
     
             except Exception as e:
                 st.error(f"Failed to analyze MIDI: {e}")
@@ -409,6 +418,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
