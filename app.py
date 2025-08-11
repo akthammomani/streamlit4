@@ -374,7 +374,7 @@ with main_col:
                             with st.spinner("Rendering score…"):
                                 try:
                                     # keep it light; adjust height as you like
-                                    xml = midi_to_musicxml_str(midi_path, max_measures=16)
+                                    xml = midi_to_musicxml_str(midi_path)
                                     render_musicxml_osmd(xml, height=520, compact=True)
                                 except Exception as e:
                                     st.warning(f"Couldn’t render sheet music: {e}")
@@ -423,6 +423,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
