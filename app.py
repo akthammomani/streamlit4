@@ -21,6 +21,7 @@ os.environ["BASIC_PITCH_BACKEND"] = "onnx"
 from utils.inference import predict_composer
 from utils.audio_utils import convert_audio_to_midi
 from utils.vis_utils import plot_pianoroll_plotly_clean  
+from utils.inference import _prep_roll, MODEL, COMPOSERS
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as img_file:
@@ -340,6 +341,11 @@ with main_col:
                     "nonzero_frac": float(np.count_nonzero(pr) / pr.size),
                     "max": int(pr.max()),
                 })
+                # DEBUG: raw probs and predicted label (prettiest check)
+                raw = MODEL.predict(_prep_roll(pr), verbose=0)[0]
+                st.write({"probs": np.round(raw, 4).tolist(), "sum": float(raw.sum())})
+                pred_idx = int(np.argmax(raw, axis=-1))
+                st.write({"predicted_label": COMPOSERS[pred_idx]})
     
                 if not is_valid_piano_midi(midi_path):
                     st.warning(
@@ -403,6 +409,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
