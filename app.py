@@ -209,7 +209,9 @@ with main_col:
         st.markdown("""
                 <div class="description">
                   <p>
-                    AI-Powered Maestro Finder instantly reveals the composer behind your MIDI files or piano recordings…
+                    AI-Powered Maestro Finder instantly reveals the composer behind your MIDI files or piano recordings. Upload or record a snippet, 
+                    and our advanced AI analyzes the music to predict whether Bach, Beethoven, Chopin, or Mozart composed it. Perfect for students, 
+                    musicians, and enthusiasts seeking quick, accurate insights into classical masterpieces:
                   </p>
                   <ul>
                     <li>Works with <b>MIDI uploads</b> or <b>live mic recordings</b></li>
@@ -428,6 +430,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
