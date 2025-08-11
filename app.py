@@ -372,11 +372,11 @@ with main_col:
                             plot_pianoroll_plotly_clean(viz_roll)
                     
                         with tab_sheet:
-                            with st.spinner("Rendering score…"):
+                            with st.spinner("Rendering Sheet Music…"):
                                 try:
                                     # keep it light; adjust height as you like
                                     xml = midi_to_musicxml_str(midi_path)
-                                    render_musicxml_osmd(xml, height=350, compact=True)
+                                    render_musicxml_osmd(xml, height=320, compact=True)
                                 except Exception as e:
                                     st.warning(f"Couldn’t render sheet music: {e}")
     
@@ -424,6 +424,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
