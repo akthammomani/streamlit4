@@ -24,13 +24,14 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     mode = "compact" if compact else "default"
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
 
+    # This HTML and JavaScript has been updated to be simpler and more reliable.
     html = f"""
-<div id="{uid}-wrap" style="width:300%;">
+<div id="{uid}-wrap" style="width: 100%; height: 100%;">
   <div style="display:flex; gap:8px; align-items:center; margin:4px 0 8px;">
     <button id="{uid}-save-svg">Save SVG</button>
     <button id="{uid}-save-png">Save PNG</button>
   </div>
-  <div id="{uid}" style="width:300%;"></div>
+  <div id="{uid}" style="width: 100%; height: 100%;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
@@ -38,18 +39,37 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
   const el  = document.getElementById("{uid}");
   const xml = atob("{b64}");
 
-  // No autoResize; we'll render once after the element is visible.
+  // 1. Enable autoResize, which is more reliable than manual resizing.
   const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {{
-    autoResize: false,
+    autoResize: true,
     backend: "svg"
   }});
   osmd.setOptions({{
     drawingParameters: "{mode}",
     drawPartNames: false,
     drawTitle: false,
-    pageFormat: "Endless"
+    pageFormat: "Endless" // Endless format is required for auto-resizing to work well
   }});
 
+  // 2. The rendering logic is now much simpler.
+  //    We just load and render, and the library handles the rest.
+  function render() {{
+      osmd.load(xml).then(() => {{
+          osmd.render();
+      }});
+  }}
+
+  // We still use an IntersectionObserver to only render when the element is visible.
+  const io = new IntersectionObserver((entries, obs) => {{
+    if (entries.some(e => e.isIntersecting)) {{
+      obs.disconnect();
+      render();
+    }}
+  }}, {{ threshold: 0.1 }});
+  io.observe(el);
+
+
+  // --- Save SVG/PNG logic (unchanged from your original) ---
   function dl(name, blob) {{
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -75,7 +95,7 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     const h  = vb && vb.height ? vb.height : svg.getBBox().height;
     const img = new Image();
     img.onload = () => {{
-      const scale = 2; // sharper PNG
+      const scale = 2;
       const c = document.createElement("canvas");
       c.width  = Math.max(1, Math.round(w * scale));
       c.height = Math.max(1, Math.round(h * scale));
@@ -89,54 +109,7 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
 
   document.getElementById("{uid}-save-svg").addEventListener("click", saveSVG);
   document.getElementById("{uid}-save-png").addEventListener("click", savePNG);
-
-  // ---- Fit once when the element is actually visible & has width ----
-  let rendered = false;
-  function tryRender() {{
-    if (rendered) return;
-    const w = el.clientWidth;
-    if (!w || w < 200) {{ requestAnimationFrame(tryRender); return; }}
-
-    osmd.load(xml).then(() => {{
-      // render once to measure intrinsic width
-      osmd.render();
-      const svg = el.querySelector("svg");
-      if (!svg) return;
-
-      // compute usable content width (subtract padding)
-      const cs   = getComputedStyle(el);
-      const pad  = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
-      const colW = Math.max(0, el.clientWidth - (isNaN(pad) ? 0 : pad));
-
-      const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-      const scoreW = vb && vb.width ? vb.width : svg.getBBox().width;
-
-      if (scoreW > 0 && colW > 0) {{
-        // small gutter so we avoid scrollbars
-        const usable = Math.max(0, colW - 8);
-        osmd.zoom = Math.max(0.05, Math.min(usable / scoreW, 3));
-        osmd.render();   // render once more after zoom
-      }}
-
-      // freeze the SVG size so layout changes don't retrigger anything
-      const finalSVG = el.querySelector("svg");
-      if (finalSVG) {{
-        finalSVG.removeAttribute("width");
-        finalSVG.removeAttribute("height");
-        finalSVG.style.width  = "100%";
-        finalSVG.style.height = "auto";
-        finalSVG.style.display = "block";
-      }}
-
-      rendered = true;
-    }});
-  }}
-
-  // Start only when the element becomes visible (tabs start hidden)
-  const io = new IntersectionObserver((entries, obs) => {{
-    if (entries.some(e => e.isIntersecting)) {{ obs.disconnect(); tryRender(); }}
-  }}, {{ threshold: 0.1 }});
-  io.observe(el);
 </script>
 """
-    st.components.v1.html(html, height=height, scrolling=True)
+    # 3. Set scrolling=False. Since the content now fits, we don't need scrollbars.
+    st.components.v1.html(html, height=height, scrolling=False)
