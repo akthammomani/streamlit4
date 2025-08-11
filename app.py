@@ -207,15 +207,16 @@ with main_col:
         st.markdown('<div class="subheading">Shazam—but for classical composers</div>', unsafe_allow_html=True)
         st.markdown('<div class="headline">Identify composers with AI precision</div>', unsafe_allow_html=True)
         st.markdown("""
-            <div class="description">
-                AI-Powered Maestro Finder instantly reveals the composer behind your MIDI files or piano recordings.
-                Upload or record a snippet, and our advanced AI analyzes the music to predict whether Bach, Beethoven,
-                Chopin, or Mozart composed it. Perfect for students, musicians, and enthusiasts seeking quick, accurate
-                insights into classical masterpieces:
-                * Works with MIDI uploads or live mic recordings
-                * Confidence bars, plus a piano-roll visualization (and sheet music on demand)
-                * Fast, lightweight, and easy to extend with more composers
-            </div>
+                <div class="description">
+                  <p>
+                    AI-Powered Maestro Finder instantly reveals the composer behind your MIDI files or piano recordings…
+                  </p>
+                  <ul>
+                    <li>Works with <b>MIDI uploads</b> or <b>live mic recordings</b></li>
+                    <li><b>Confidence bars</b> plus a piano-roll (and optional sheet music)</li>
+                    <li>Fast, lightweight, and easy to extend with more composers</li>
+                  </ul>
+                </div>
         """, unsafe_allow_html=True)
         st.markdown("[![](https://img.shields.io/badge/GitHub%20-AI--Powered%20Maestro%20Finder-informational)](https://github.com/akthammomani/ai_powered_maestro_finder)")
 
@@ -427,6 +428,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
