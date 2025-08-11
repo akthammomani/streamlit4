@@ -124,13 +124,25 @@ st.markdown("""
 }
 
   /* Card container style (unchanged) */
-  .card {
-      background: #fff; border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.07);
-      padding: var(--padY) var(--padX); height: 100%;
-      border: 2px solid transparent;
-  }
-  .card h4 { margin: 10px 0; font-weight: 700; }
+  .card{
+  background:#fff; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.07);
+  padding: var(--padY) var(--padX); border:2px solid transparent;
+  height:100%; display:flex; flex-direction:column;
+}
+.card h4{
+  font-size: clamp(16px, 1.6vw, 20px);
+  line-height:1.25; margin:12px 0 8px; font-weight:700;
+  /* reserve ~2 lines so all boxes align */
+  min-height: 2.6em;
+  display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; -webkit-line-clamp:2;
+}
+.card p{
+  font-size: clamp(14px, 1.3vw, 16px);
+  line-height:1.5; color:#444; margin:0;
+  /* reserve ~3 lines */
+  min-height: 4.5em;
+  display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; -webkit-line-clamp:3;
+}
   /* Ensure card images are exactly the same size as header image */
   .card img{
     width: var(--imgW);
@@ -428,6 +440,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
