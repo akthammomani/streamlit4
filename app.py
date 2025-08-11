@@ -20,7 +20,7 @@ os.environ["BASIC_PITCH_BACKEND"] = "onnx"
 
 from utils.inference import predict_composer
 from utils.audio_utils import convert_audio_to_midi
-from utils.vis_utils import plot_pianoroll_plotly_clean  
+from utils.vis_utils import plot_pianoroll_plotly_clean, plot_confidence_bars
 from utils.inference import _prep_roll, MODEL, COMPOSERS
 from utils.score_utils import midi_to_musicxml_str, render_musicxml_osmd
 
@@ -423,6 +423,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
