@@ -26,12 +26,12 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
 
     # This HTML and JavaScript has been updated to be simpler and more reliable.
     html = f"""
-<div id="{uid}-wrap" style="width: 300%; height: 100%;">
+<div id="{uid}-wrap" style="width: 100%; height: 100%;">
   <div style="display:flex; gap:8px; align-items:center; margin:4px 0 8px;">
     <button id="{uid}-save-svg">Save SVG</button>
     <button id="{uid}-save-png">Save PNG</button>
   </div>
-  <div id="{uid}" style="width: 300%; height: 100%;"></div>
+  <div id="{uid}" style="width: 100%; height: 100%;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
