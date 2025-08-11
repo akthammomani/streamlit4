@@ -24,7 +24,7 @@ def plot_confidence_bars(pred_probs: dict):
         return
 
     # sort by confidence desc
-    labels, vals = zip(*sorted(pred_probs.items(), key=lambda kv: kv[1], reverse=True))
+    labels, vals = zip(*sorted(pred_probs.items(), key=lambda kv: kv[1], reverse=False))
     vals = np.array(vals, dtype=float)
 
     # normalize if needed
@@ -119,6 +119,7 @@ def plot_pianoroll_plotly_clean(pr: np.ndarray):
         height=380
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
 
 
 
