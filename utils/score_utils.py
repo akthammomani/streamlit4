@@ -16,46 +16,54 @@ def midi_to_musicxml_str(midi_path: str) -> str:
         pass
     return xml
 
-def render_musicxml_osmd(xml_str: str, height: int = 640, compact: bool = True):
+def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     import streamlit as st, base64, uuid
     uid  = "osmd_" + uuid.uuid4().hex
     mode = "compact" if compact else "default"
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
 
     html = f"""
-<div id="{uid}" style="width:100%;"></div>
+<div id="{uid}-wrap" style="width:100%;">
+  <div id="{uid}" style="width:100%;"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
 <script>
   const el  = document.getElementById("{uid}");
   const xml = atob("{b64}");
-  const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {{ autoResize: true, backend: "svg" }});
 
-  // 1) Set options like in the demo (then re-render)
+  // 1) No autoResize; we'll scale via CSS so no render loops
+  const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {{
+    autoResize: false, backend: "svg"
+  }});
   osmd.setOptions({{
     drawingParameters: "{mode}",
-    drawPartNames: false,   // remove left labels
+    drawPartNames: false,
     drawTitle: false,
     pageFormat: "Endless"
   }});
 
-  function fitWidth() {{
-    // 2) Render, compute intrinsic width, then zoom to fill container
-    osmd.render();  // required after setOptions/changes (see demo)
+  function cssFill() {{
     const svg = el.querySelector("svg");
     if (!svg) return;
-    const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-    const scoreW = vb && vb.width ? vb.width : svg.getBBox().width;
-    const colW   = el.clientWidth;
-    if (scoreW > 0 && colW > 0) {{
-      osmd.zoom = (colW - 16) / scoreW; // small padding
-      osmd.render();                     // re-render after zoom
-    }}
-    svg.style.width = "100%"; svg.style.height = "auto"; svg.style.display = "block";
+    // remove fixed size so CSS can stretch it
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.style.width  = "100%";
+    svg.style.height = "auto";
+    svg.style.display = "block";
   }}
 
   osmd.load(xml).then(() => {{
-    fitWidth();
-    new ResizeObserver(fitWidth).observe(el);  // keep fitting on resize
+    osmd.render();   // one render only
+    cssFill();
+
+    // Cheap, debounced resize (no osmd.render)
+    let t = null;
+    window.addEventListener("resize", () => {{
+      clearTimeout(t);
+      t = setTimeout(cssFill, 120);
+    }});
   }});
 </script>
 """
