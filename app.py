@@ -361,6 +361,7 @@ with main_col:
 
                     with pie_col:
                         st.subheader("Confidence")
+                        st.markdown("""<br>""", unsafe_allow_html=True)
                         plot_confidence_bars(pred_probs)
                     
                     with viz_col:
@@ -423,6 +424,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
