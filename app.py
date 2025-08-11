@@ -357,22 +357,27 @@ with main_col:
                     pred_probs, viz_roll = predict_composer(pr)  # viz_roll: (88,512)
                     #st.write("Softmax:", list(pred_probs.items()))
     
-                    pie_col, sheet, roll_col = st.columns([1, 1.2, 2], gap="large")
+                    pie_col, viz_col = st.columns([1, 3], gap="large")
+
                     with pie_col:
                         st.subheader("Confidence")
                         plot_confidence_pie(pred_probs)
-                        # DEBUG (optional): st.write(pred_probs)
-                    with roll_col:
-                        st.subheader("Piano-roll Visualization (88 × 512)")
-                        plot_pianoroll_plotly_clean(viz_roll)
-
-                    with sheet:
-                        with st.expander("Show sheet music"):
-                            try:
-                                xml = midi_to_musicxml_str(midi_path)
-                                render_musicxml_osmd(xml, height=350, compact=True)
-                            except Exception as e:
-                                st.warning(f"Couldn’t render sheet music: {e}")
+                    
+                    with viz_col:
+                        st.subheader("Visualization")
+                        tab_roll, tab_sheet = st.tabs(["Piano-roll", "Sheet music"])
+                    
+                        with tab_roll:
+                            plot_pianoroll_plotly_clean(viz_roll)
+                    
+                        with tab_sheet:
+                            with st.spinner("Rendering score…"):
+                                try:
+                                    # keep it light; adjust height as you like
+                                    xml = midi_to_musicxml_str(midi_path, max_measures=16)
+                                    render_musicxml_osmd(xml, height=520, compact=True)
+                                except Exception as e:
+                                    st.warning(f"Couldn’t render sheet music: {e}")
     
             except Exception as e:
                 st.error(f"Failed to analyze MIDI: {e}")
@@ -418,6 +423,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
