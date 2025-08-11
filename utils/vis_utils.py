@@ -44,7 +44,8 @@ def plot_confidence_bars(pred_probs: dict):
 
     fig.update_layout(
         margin=dict(l=0, r=10, t=10, b=0),
-        height=40 * len(labels) + 40,
+        #height=40 * len(labels) + 40,
+        height=340,
         showlegend=False,
         xaxis=dict(visible=False, range=[0, 1]),
         yaxis=dict(title=None, tickfont=dict(size=14)),
@@ -118,5 +119,6 @@ def plot_pianoroll_plotly_clean(pr: np.ndarray):
         height=380
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
 
 
