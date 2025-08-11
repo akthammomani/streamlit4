@@ -17,22 +17,27 @@ def midi_to_musicxml_str(midi_path: str) -> str:
     return xml
 
 # utils/score_utils.py
+# utils/score_utils.py
 def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
-    
+    import streamlit as st, base64, uuid
     uid  = "osmd_" + uuid.uuid4().hex
     mode = "compact" if compact else "default"
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
 
     html = f"""
-<div id="{uid}-wrap" style="width:200%;">
+<div id="{uid}-wrap" style="width:100%;">
+  <div style="display:flex; gap:8px; align-items:center; margin:4px 0 8px;">
+    <button id="{uid}-save-svg">Save SVG</button>
+    <button id="{uid}-save-png">Save PNG</button>
+  </div>
   <div id="{uid}" style="width:200%;"></div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
 <script>
   const el  = document.getElementById("{uid}");
   const xml = atob("{b64}");
 
-  // No autoResize. No observers. We will fit once and freeze.
   const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {{
     autoResize: false, backend: "svg"
   }});
@@ -43,26 +48,19 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     pageFormat: "Endless"
   }});
 
-  function fitOnceAndFreeze() {{
-    // lock container width so later layout changes don't refire sizing
+  function renderOnceFit() {{
+    // lock container width, render once, fit, and freeze
     const colW = el.getBoundingClientRect().width;
     el.style.width = colW + "px";
-
-    // initial render to measure intrinsic score width
     osmd.render();
     const svg = el.querySelector("svg");
     if (!svg) return;
-
     const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
     const scoreW = vb && vb.width ? vb.width : svg.getBBox().width;
-
-    // set zoom to fill container, render once more, then freeze sizes
     if (scoreW > 0 && colW > 0) {{
-      osmd.zoom = (colW /* - 8 */) / scoreW;  // small padding
+      osmd.zoom = (colW - 8) / scoreW;   // small gutter
       osmd.render();
     }}
-
-    // remove explicit width/height from SVG and set fixed px to stop reflows
     const finalSVG = el.querySelector("svg");
     if (finalSVG) {{
       finalSVG.removeAttribute("width");
@@ -73,10 +71,48 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     }}
   }}
 
-  osmd.load(xml).then(() => {{
-    fitOnceAndFreeze();
-    // no resize listeners or observers → no loops
-  }});
+  function dl(name, blob) {{
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {{ URL.revokeObjectURL(a.href); a.remove(); }}, 1000);
+  }}
+
+  function saveSVG() {{
+    const svg = el.querySelector("svg");
+    if (!svg) return;
+    const s = new XMLSerializer().serializeToString(svg);
+    dl("score.svg", new Blob([s], {{type: "image/svg+xml;charset=utf-8"}}));
+  }}
+
+  function savePNG() {{
+    const svg = el.querySelector("svg");
+    if (!svg) return;
+    const s = new XMLSerializer().serializeToString(svg);
+    const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
+    const w  = vb && vb.width ? vb.width : svg.getBBox().width;
+    const h  = vb && vb.height ? vb.height : svg.getBBox().height;
+    const img = new Image();
+    img.onload = () => {{
+      const scale = 2; // higher = sharper PNG
+      const c = document.createElement("canvas");
+      c.width  = Math.max(1, Math.round(w * scale));
+      c.height = Math.max(1, Math.round(h * scale));
+      const ctx = c.getContext("2d");
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.drawImage(img, 0, 0);
+      c.toBlob(b => dl("score.png", b), "image/png");
+    }};
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(s);
+  }}
+
+  document.getElementById("{uid}-save-svg").addEventListener("click", saveSVG);
+  document.getElementById("{uid}-save-png").addEventListener("click", savePNG);
+
+  osmd.load(xml).then(renderOnceFit);
 </script>
 """
     st.components.v1.html(html, height=height, scrolling=True)
+
