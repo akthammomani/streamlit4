@@ -25,12 +25,12 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     b64  = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
 
     html = Template(r"""
-<div id="${uid}-wrap" style="width:100%;">
+<div id="${uid}-wrap" style="width:40%;">
   <div style="display:flex; gap:8px; align-items:center; margin:0 0 8px;">
     <button id="${uid}-save-svg">Save SVG</button>
     <button id="${uid}-save-png">Save PNG</button>
   </div>
-  <div id="${uid}" style="width:100%;"></div>
+  <div id="${uid}" style="width:40%;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
