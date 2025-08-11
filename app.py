@@ -370,7 +370,8 @@ with main_col:
                         with st.expander("Show sheet music"):
                             try:
                                 xml = midi_to_musicxml_str(midi_path)
-                                render_musicxml_osmd(xml, height=800, compact=True)
+                                render_musicxml_osmd(xml, height=800, compact=True,
+                                         center=True, show_part_names=False, show_title=False, zoom=1.0)
                             except Exception as e:
                                 st.warning(f"Couldn’t render sheet music: {e}")
     
@@ -418,6 +419,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
