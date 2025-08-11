@@ -13,33 +13,43 @@ def midi_to_name(n: int) -> str:
     octave = (n // 12) - 1
     return f"{_NOTE_NAMES[n % 12]}{octave}"
 
-def plot_confidence_pie(pred_probs: dict, height: int = 340):
+def plot_confidence_bars(pred_probs: dict):
     """
-    Plot a donut (pie) of composer probabilities using Plotly.
-    pred_probs: dict, e.g. {"Bach":0.62,"Mozart":0.2,"Beethoven":0.1,"Chopin":0.08}
+    Horizontal confidence bars.
+    y-axis = composer names
+    Bar labels show percent. x-axis hidden.
     """
     if not pred_probs:
         st.info("No probabilities to chart.")
         return
 
-    labels = list(pred_probs.keys())
-    values = [float(pred_probs[k]) for k in labels]
-    s = sum(values)
-    if s > 0:
-        values = [v / s for v in values]
+    # sort by confidence desc
+    labels, vals = zip(*sorted(pred_probs.items(), key=lambda kv: kv[1], reverse=True))
+    vals = np.array(vals, dtype=float)
 
-    fig = go.Figure(
-        data=[go.Pie(
-            labels=labels,
-            values=values,
-            hole=0.45,
-            textinfo="label+percent",
-            hovertemplate="<b>%{label}</b><br>%{percent:.1%} (%{value:.3f})<extra></extra>",
-            marker=dict(colors=_PIE_COLORS[:len(labels)], line=dict(color='white', width=2)),
-            sort=False
-        )]
+    # normalize if needed
+    s = vals.sum()
+    if s > 0:
+        vals = vals / s
+
+    fig = go.Figure(go.Bar(
+        x=vals,
+        y=list(labels),
+        orientation="h",
+        text=[f"{v*100:.1f}%" for v in vals],
+        textposition="outside",
+        cliponaxis=False,
+        marker=dict(line=dict(color="white", width=1))
+    ))
+
+    fig.update_layout(
+        margin=dict(l=0, r=10, t=10, b=0),
+        height=40 * len(labels) + 40,
+        showlegend=False,
+        xaxis=dict(visible=False, range=[0, 1]),
+        yaxis=dict(title=None, tickfont=dict(size=14)),
     )
-    fig.update_layout(margin=dict(l=0, r=0, t=10, b=0), height=height, showlegend=False)
+
     st.plotly_chart(fig, use_container_width=True)
 
 def plot_pianoroll_plotly_clean(pr: np.ndarray):
@@ -108,4 +118,5 @@ def plot_pianoroll_plotly_clean(pr: np.ndarray):
         height=380
     )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
 
