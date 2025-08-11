@@ -279,7 +279,7 @@ with main_col:
     st.header("Upload your MIDI file or record live piano")
 
     st.info(
-        "🎹 Please provide a clean solo piano recording (no background instruments or noise). "
+        "Please provide a clean solo piano recording (no background instruments or noise). "
         "Poor-quality or non-piano audio may result in failed or inaccurate transcription."
     )
 
@@ -294,7 +294,7 @@ with main_col:
 
     with col_rec:
         st.markdown("<h4>Record Audio</h4>", unsafe_allow_html=True)
-        recorded_audio = st.audio_input("🎤 Record your audio snippet")
+        recorded_audio = st.audio_input("Record your audio snippet")
 
     # ----- Priority: uploaded MIDI > recorded audio ----- 
     if uploaded_file is not None:
@@ -336,20 +336,20 @@ with main_col:
     
                 # densest 512 frames, (88,512) in 0..127
                 pr = extract_best_512(pm, fs=10, window=512)
-                st.write({
-                    "roll_shape": pr.shape,
-                    "nonzero_frac": float(np.count_nonzero(pr) / pr.size),
-                    "max": int(pr.max()),
-                })
+                #st.write({
+                    #"roll_shape": pr.shape,
+                    #"nonzero_frac": float(np.count_nonzero(pr) / pr.size),
+                  #  "max": int(pr.max()),
+                #})
                 # DEBUG: raw probs and predicted label (prettiest check)
-                raw = MODEL.predict(_prep_roll(pr), verbose=0)[0]
-                st.write({"probs": np.round(raw, 4).tolist(), "sum": float(raw.sum())})
-                pred_idx = int(np.argmax(raw, axis=-1))
-                st.write({"predicted_label": COMPOSERS[pred_idx]})
+                #raw = MODEL.predict(_prep_roll(pr), verbose=0)[0]
+                #st.write({"probs": np.round(raw, 4).tolist(), "sum": float(raw.sum())})
+                #pred_idx = int(np.argmax(raw, axis=-1))
+               # st.write({"predicted_label": COMPOSERS[pred_idx]})
     
                 if not is_valid_piano_midi(midi_path):
                     st.warning(
-                        "⚠️ The MIDI appears too short or sparse. "
+                        "The MIDI appears too short or sparse. "
                         "Please try a clearer solo piano clip."
                     )
                 else:
@@ -409,6 +409,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
