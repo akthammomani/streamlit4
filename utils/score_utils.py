@@ -65,7 +65,7 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
     if(finalSVG){
       finalSVG.removeAttribute("width");
       finalSVG.removeAttribute("height");
-      finalSVG.style.width  = "200%";
+      finalSVG.style.width  = "100%";
       finalSVG.style.height = "auto";
       finalSVG.style.display= "block";
     }
