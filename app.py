@@ -366,13 +366,13 @@ with main_col:
                         st.subheader("Piano-roll Visualization (88 × 512)")
                         plot_pianoroll_plotly_clean(viz_roll)
 
-                    #with roll_col:
-                    with st.expander("Show sheet music"):
-                        try:
-                            xml = midi_to_musicxml_str(midi_path)
-                            render_musicxml_osmd(xml, height=800, compact=True)
-                        except Exception as e:
-                            st.warning(f"Couldn’t render sheet music: {e}")
+                    with pie_col:
+                        with st.expander("Show sheet music"):
+                            try:
+                                xml = midi_to_musicxml_str(midi_path)
+                                render_musicxml_osmd(xml, height=800, compact=True)
+                            except Exception as e:
+                                st.warning(f"Couldn’t render sheet music: {e}")
     
             except Exception as e:
                 st.error(f"Failed to analyze MIDI: {e}")
@@ -418,6 +418,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
