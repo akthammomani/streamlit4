@@ -21,60 +21,39 @@ def midi_to_musicxml_str(midi_path: str, max_measures: int | None = 16) -> str:
 
 
 def render_musicxml_osmd(xml_str: str, height: int = 800, compact: bool = True, zoom: float = 1.0):
-    import streamlit as st, base64, uuid
+    import streamlit as st, base64
     mode = "compact" if compact else "default"
     b64 = base64.b64encode(xml_str.encode("utf-8")).decode("ascii")
-    uid = "osmd_" + uuid.uuid4().hex
 
     html = f"""
-<div id="{uid}_wrap" style="width:100%; text-align:center;">
-  <div id="{uid}_msg" style="font:13px monospace;color:#555;margin:6px 0;">loading…</div>
-  <div id="{uid}" style="display:inline-block;"></div>
+<div id="status" style="font:12px monospace;color:#666;margin-bottom:6px;"></div>
+<div id="osmd-wrap" style="width:100%; text-align:center;">
+  <div id="osmd-container" style="display:inline-block;"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.4/build/opensheetmusicdisplay.min.js"></script>
 <script>
-  const XML_B64 = "{b64}";
-  const MODE    = "{mode}";
-  const ZOOM    = {zoom};
-  const el  = document.getElementById("{uid}");
-  const msg = document.getElementById("{uid}_msg");
-  const say = (t, c) => {{ msg.textContent = t; if (c) msg.style.color = c; }};
-
-  function ensureOSMD() {{
-    return new Promise((resolve, reject) => {{
-      if (window.opensheetmusicdisplay) return resolve();
-      const srcs = [
-        "https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.9.0/build/opensheetmusicdisplay.min.js",
-        "https://unpkg.com/opensheetmusicdisplay@1.9.0/build/opensheetmusicdisplay.min.js"
-      ];
-      const loadNext = (i) => {{
-        if (i >= srcs.length) return reject("Failed to load OSMD from CDNs");
-        const s = document.createElement("script");
-        s.src = srcs[i];
-        s.onload = () => resolve();
-        s.onerror = () => loadNext(i+1);
-        document.body.appendChild(s);
-      }};
-      loadNext(0);
-    }});
-  }}
-
-  function renderXML() {{
-    const xml = atob(XML_B64);
-    const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(el, {{ autoResize: true }});
-    osmd.setOptions({{ drawingParameters: MODE }});
-    return osmd.load(xml).then(() => {{
+  const say=(t,c)=>{{const s=document.getElementById('status'); s.textContent=t; if(c) s.style.color=c; }};
+  try {{
+    const xml = atob("{b64}");
+    const osmd = new opensheetmusicdisplay.OpenSheetMusicDisplay(
+      document.getElementById('osmd-container'), {{ autoResize: true }}
+    );
+    osmd.setOptions({{ drawingParameters: '{mode}' }});
+    osmd.load(xml).then(() => {{
       osmd.render();
-      osmd.zoom = ZOOM;
-      const svg = el.querySelector("svg");
-      if (svg) {{ svg.style.maxWidth = "100%"; svg.style.display = "inline-block"; }}
-      say(""); // clear status
-    }});
+      osmd.zoom = {zoom};
+      const svg = document.querySelector('#osmd-container svg');
+      if (svg) {{
+        svg.style.maxWidth = '100%';
+        svg.style.display  = 'inline-block';  // centers with the wrapper
+      }}
+      say('');
+    }}).catch(e => say('OSMD load error: ' + e, '#b00'));
+  }} catch(e) {{
+    say('Top-level error: ' + e, '#b00');
   }}
-
-  ensureOSMD()
-    .then(() => {{ say("rendering…"); return renderXML(); }})
-    .catch(e => say(String(e), "#b00"));
 </script>
 """
     st.components.v1.html(html, height=height, scrolling=True)
+
