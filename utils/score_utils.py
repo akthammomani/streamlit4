@@ -58,7 +58,7 @@ def render_musicxml_osmd(xml_str: str, height: int = 620, compact: bool = True):
 
     // set zoom to fill container, render once more, then freeze sizes
     if (scoreW > 0 && colW > 0) {{
-      osmd.zoom = (colW - 16) / scoreW;  // small padding
+      osmd.zoom = (colW /* - 16 */) / scoreW;  // small padding
       osmd.render();
     }}
 
