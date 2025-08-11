@@ -3,12 +3,12 @@ import json
 import numpy as np
 import tensorflow as tf
 
-# ── Paths
+# ----- Paths -----
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH  = ROOT / "model" / "best_cnn.keras"
 LABELS_PATH = Path(__file__).resolve().with_name("label_map.json")
 
-# ── Load model + labels
+# ----- Load model + labels -----
 MODEL = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
 COMPOSERS = json.load(open(LABELS_PATH))   # e.g. ["Bach","Beethoven","Chopin","Mozart"]
 
@@ -51,4 +51,5 @@ def predict_composer(piano_roll: np.ndarray):
     # return a (88,512) roll for your plotter
     viz_roll = x[0, :, :, 0].T                 # (88,512)
     return probs_dict, viz_roll
+
 
