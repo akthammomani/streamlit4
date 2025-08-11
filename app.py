@@ -367,7 +367,7 @@ with main_col:
                         plot_pianoroll_plotly_clean(viz_roll)
 
                     with roll_col:
-                        with st.expander("Score (beta): show sheet music"):
+                        with st.expander("Show sheet music"):
                             try:
                                 xml = midi_to_musicxml_str(midi_path)
                                 render_musicxml_osmd(xml, height=800, compact=True)
@@ -418,6 +418,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
