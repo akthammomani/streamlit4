@@ -6,15 +6,15 @@ import streamlit as st, base64
 def midi_to_musicxml_str(midi_path: str, max_measures: int | None = 16) -> str:
     s = converter.parse(midi_path)
 
-    # Make clean measures + fix rhythms/tuplets/overlaps
+    # Clean & measure-ize (version-safe)
     s = s.makeMeasures(inPlace=False)
-    s = s.makeNotation(inPlace=False, betterRhythm=True)
+    s = s.makeNotation(inPlace=False)   # <- no betterRhythm kwarg
 
-    # Trim to keep rendering light (bump if you like)
+    # Keep rendering light
     if max_measures:
         s = s.measures(1, max_measures)
 
-    # Export to MusicXML (string, no temp files)
+    # Export to MusicXML (string)
     exp = musicxml.m21ToXml.GeneralObjectExporter(s)
     xml_bytes = exp.parse()
     return xml_bytes.decode("utf-8", errors="ignore")
