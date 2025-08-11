@@ -369,8 +369,10 @@ with main_col:
                     with roll_col:
                         with st.expander("Show sheet music"):
                             try:
-                                xml = midi_to_musicxml_str(midi_path)
-                                st.write({"musicxml_len": len(xml)})  # should be > 0
+                                xml = midi_to_musicxml_str(midi_path, max_measures=16)  # try 8–24 if needed
+                                st.write({"musicxml_len": len(xml), 
+                                          "has_partwise": "<score-partwise" in xml, 
+                                          "has_timewise": "<score-timewise" in xml})
                                 render_musicxml_osmd(xml, height=800, compact=True, zoom=1.0)
                             except Exception as e:
                                 st.warning(f"Couldn’t render sheet music: {e}")
@@ -419,6 +421,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
