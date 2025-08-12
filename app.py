@@ -316,12 +316,13 @@ with main_col:
         "Please provide a clean solo piano recording (no background instruments or noise). "
         "Poor-quality or non-piano audio may result in failed or inaccurate transcription."
     )
-    st.markdown("#### Need a sample?")
-    st.markdown(
-        "**No MIDI handy?** Grab one from the "
-        "[examples folder](https://github.com/akthammomani/ai_powered_maestro_finder/tree/main/assets/examples) "
-        "and upload it here. _On GitHub: click a file → **Download raw**._"
+    #st.markdown("#### Need a sample?")
+    st.caption("No MIDI handy? Open the examples folder, download a MIDI, then drop it here.")
+    st.link_button(
+        "Open examples folder",
+        "https://github.com/akthammomani/ai_powered_maestro_finder/tree/main/assets/examples"
     )
+    st.caption("Tip: On GitHub, click a file → **Download raw**.")
 
     col_up, col_rec = st.columns(2, gap="large")
 
@@ -473,6 +474,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
