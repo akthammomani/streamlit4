@@ -319,10 +319,10 @@ with main_col:
     #st.markdown("#### Need a sample?")
     st.caption("No MIDI handy? Open the examples folder, download a MIDI, then drop it here.")
     st.link_button(
-        "Open examples folder",
+        "Examples Folder",
         "https://github.com/akthammomani/ai_powered_maestro_finder/tree/main/assets/examples"
     )
-    st.caption("Tip: On GitHub, click a file → **Download raw**.")
+    #st.caption("Tip: On GitHub, click a file → **Download raw**.")
 
     col_up, col_rec = st.columns(2, gap="large")
 
@@ -474,6 +474,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
