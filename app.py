@@ -368,14 +368,14 @@ with main_col:
             try:
                 pm = pretty_midi.PrettyMIDI(midi_path)
 
-                # 1) GATE: does this look like solo piano?
+                # does this look like solo piano?
                 ok, reasons = piano_likeness_flags(pm, fs=8)
                 if not ok:
                     st.warning(
                         "This clip doesn’t look like solo piano (likely voice/whistle). "
                         f"Reasons: {', '.join(reasons)}. Prediction may be unreliable."
                     )
-                # If you want to *stop* here (recommended), uncomment:
+                    # *stop* here:
                     st.stop()
     
                 # densest 512 frames, (88,512) in 0..127
@@ -467,6 +467,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
