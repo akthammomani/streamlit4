@@ -316,10 +316,13 @@ with main_col:
         "Please provide a clean solo piano recording (no background instruments or noise). "
         "Poor-quality or non-piano audio may result in failed or inaccurate transcription."
     )
+    st.markdown("#### Need a sample?")
     st.markdown(
-    """
-    [![All examples](https://img.shields.io/badge/Examples-folder-0A66C2)](https://github.com/akthammomani/ai_powered_maestro_finder/tree/main/assets/examples)
-    """)
+        "**No MIDI handy?** Grab one from the "
+        "[examples folder](https://github.com/akthammomani/ai_powered_maestro_finder/tree/main/assets/examples) "
+        "and upload it here. _On GitHub: click a file → **Download raw**._"
+    )
+
     col_up, col_rec = st.columns(2, gap="large")
 
     uploaded_midi = None
@@ -470,6 +473,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
