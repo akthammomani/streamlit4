@@ -233,7 +233,7 @@ with main_col:
     col1, col2 = st.columns([7, 3], gap="small")  
 
     with col1:
-        st.markdown('<div class="subheading">Shazam—but for classical composers</div>', unsafe_allow_html=True)
+        st.markdown('<div class="subheading">Shazam - but for classical composers</div>', unsafe_allow_html=True)
         st.markdown('<div class="headline">Identify composers with AI precision</div>', unsafe_allow_html=True)
         st.markdown("""
                 <div class="description">
@@ -474,6 +474,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
