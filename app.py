@@ -217,17 +217,16 @@ def plot_confidence_pie(pred_probs: dict):
 left_pad, main_col, right_pad = st.columns([1, 6, 1])
 
 with main_col:
+    header_img_data = get_base64_image("assets/images/header.jpg")
     st.markdown(
         f"""
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1rem;">
-            <img src="data:image/png;base64,{get_base64_image('assets/images/logo.png')}" 
-                 alt="Logo" style="width: 60px; height: 60px; border-radius: 8px;">
-            <h1 style="font-size: 50px; font-weight: 800; margin: 0;">
-                AI-Powered Maestro Finder
-            </h1>
+        <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+            <img src="data:image/jpeg;base64,{header_img_data}"
+                 alt="AI-Powered Maestro Finder header"
+                 style="max-width:100%; height:auto; border-radius:16px;">
         </div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
     # ----- HEADER SECTION  — tightened spacing ----- 
     col1, col2 = st.columns([7, 3], gap="small")  
@@ -474,6 +473,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
