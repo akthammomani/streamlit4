@@ -220,10 +220,10 @@ with main_col:
     header_img_data = get_base64_image("assets/images/header.jpg")
     st.markdown(
         f"""
-        <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+        <div style="width:100%; margin-bottom:1.5rem;">
             <img src="data:image/jpeg;base64,{header_img_data}"
                  alt="AI-Powered Maestro Finder header"
-                 style="max-width:100%; height:auto; border-radius:16px;">
+                 style="width:100%; height:auto; display:block; border-radius:16px;">
         </div>
         """,
         unsafe_allow_html=True,
@@ -473,6 +473,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
