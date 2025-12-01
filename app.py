@@ -217,7 +217,7 @@ def plot_confidence_pie(pred_probs: dict):
 left_pad, main_col, right_pad = st.columns([1, 6, 1])
 
 with main_col:
-    header_img_data = get_base64_image("assets/images/header.jpg")
+    header_img_data = get_base64_image("assets/images/header_v1.jpg")
     st.markdown(
         f"""
         <div style="width:100%; margin-bottom:1.5rem;">
@@ -473,6 +473,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
