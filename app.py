@@ -71,7 +71,7 @@ def piano_likeness_flags(pm_obj, fs=8):
 
 
 # ----- PAGE CONFIG + CUSTOM STYLES ----- 
-logo = Image.open("assets/images/logo.png")
+logo = Image.open("assets/images/logo_v1.png")
 st.set_page_config(
     page_title="AI-Powered Maestro Finder", 
     page_icon=logo,
@@ -473,6 +473,7 @@ with st.container():
                 """,
                 unsafe_allow_html=True,
             )
+
 
 
 
